@@ -81,20 +81,160 @@
 
 ## 🚀 Installation et Utilisation
 
-### Version Expo (Recommandée pour les tests)
-1. Allez sur [Expo Snack](https://snack.expo.dev)
-2. Créez un nouveau projet
-3. Copiez le contenu de `ExpoVersionModern.js`
-4. Scannez le QR code avec Expo Go
+## 📱 **PROTOCOLE COMPLET DE TEST AVEC EXPO SNACK**
 
-### Version React Native CLI (Production)
+### **🎯 Prérequis**
+- **Téléphone Android/iOS** avec Expo Go installé
+- **Connexion Internet** stable
+- **Permissions** caméra et localisation activées sur le téléphone
+
+### **📋 Étapes Détaillées**
+
+#### **1. Installation d'Expo Go**
+- **Android** : [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
+- **iOS** : [App Store](https://apps.apple.com/app/expo-go/id982107779)
+
+#### **2. Accès à Expo Snack**
+1. **Ouvrez votre navigateur** sur : https://snack.expo.dev
+2. **Créez un compte** ou connectez-vous
+3. **Cliquez** sur "Create a new Snack"
+
+#### **3. Configuration du Projet**
+1. **Supprimez** tout le code par défaut dans l'éditeur
+2. **Ouvrez** le fichier `ExpoVersionModern.js` de ce repository
+3. **Copiez TOUT** le contenu (Ctrl+A, Ctrl+C)
+4. **Collez** dans l'éditeur Expo Snack (Ctrl+V)
+
+#### **4. Vérification des Dépendances**
+Expo Snack devrait automatiquement détecter et installer :
+- `expo-camera`
+- `expo-location`
+- `react-native-maps`
+- `@react-native-async-storage/async-storage`
+- `react-native-vector-icons`
+
+#### **5. Test sur Téléphone**
+1. **Cliquez** sur "Run" dans Expo Snack
+2. **Scannez le QR code** avec Expo Go
+3. **Attendez** le chargement de l'application
+4. **Autorisez** les permissions caméra et localisation
+
+### **🧪 Tests Fonctionnels à Effectuer**
+
+#### **✅ Test d'Authentification**
+1. **Créez un compte** avec nom, email, mot de passe
+2. **Connectez-vous** avec les identifiants
+3. **Vérifiez** l'affichage du nom dans l'en-tête
+4. **Testez** la déconnexion
+
+#### **✅ Test de la Caméra**
+1. **Cliquez** sur l'onglet "📷 Camera"
+2. **Cliquez** sur "Prendre Photo"
+3. **Autorisez** l'accès à la caméra
+4. **Prenez** une vraie photo
+5. **Vérifiez** la prévisualisation
+6. **Cliquez** "Valider"
+
+#### **✅ Test de Géolocalisation**
+1. **Autorisez** l'accès à la localisation
+2. **Vérifiez** que la position GPS est capturée
+3. **Nommez** le lieu (ex: "Mon Bureau")
+4. **Définissez** un objectif (ex: 3 visites/semaine)
+5. **Sauvegardez** la photo
+
+#### **✅ Test de la Carte Interactive**
+1. **Cliquez** sur l'onglet "🗺️ Explorer"
+2. **Vérifiez** l'affichage de la carte
+3. **Zoomez/dézoomez** avec les gestes
+4. **Cliquez** sur un marqueur
+5. **Vérifiez** l'affichage du callout avec les détails
+
+#### **✅ Test du Journal**
+1. **Cliquez** sur l'onglet "📅 Journal"
+2. **Vérifiez** les statistiques (Photos, Lieux, Objectifs)
+3. **Cliquez** sur une photo dans la timeline
+4. **Vérifiez** l'affichage des détails
+5. **Testez** la suppression d'une photo
+
+#### **✅ Test du Profil**
+1. **Cliquez** sur l'onglet "👤 Profil"
+2. **Vérifiez** l'affichage des informations
+3. **Cliquez** sur "Modifier"
+4. **Changez** le nom ou l'email
+5. **Sauvegardez** et vérifiez les changements
+
+### **🔧 Dépannage Courant**
+
+#### **❌ Problème : "Expo Go ne trouve pas l'app"**
+- **Solution** : Vérifiez que le QR code est bien scanné
+- **Alternative** : Utilisez le lien direct dans Expo Go
+
+#### **❌ Problème : "Permissions refusées"**
+- **Solution** : Allez dans Paramètres > Applications > Expo Go > Permissions
+- **Activez** Caméra et Localisation
+
+#### **❌ Problème : "Carte ne s'affiche pas"**
+- **Solution** : Vérifiez la connexion Internet
+- **Alternative** : Redémarrez l'application
+
+#### **❌ Problème : "Caméra ne s'ouvre pas"**
+- **Solution** : Fermez et rouvrez Expo Go
+- **Vérifiez** que l'appareil photo n'est pas utilisé par une autre app
+
+### **📊 Validation des Fonctionnalités**
+
+#### **🎯 Checklist Complète**
+- [ ] **Authentification** : Création de compte et connexion
+- [ ] **Caméra** : Prise de photo avec vraie caméra
+- [ ] **Géolocalisation** : Position GPS capturée
+- [ ] **Carte** : Marqueurs affichés avec callouts
+- [ ] **Journal** : Timeline avec statistiques
+- [ ] **Profil** : Modification des informations
+- [ ] **Objectifs** : Création et suivi des objectifs
+- [ ] **Navigation** : Passage fluide entre onglets
+
+### **💡 Conseils Avancés**
+
+#### **🎯 Optimisation des Tests**
+- **Testez en extérieur** pour une meilleure géolocalisation GPS
+- **Prenez plusieurs photos** pour tester la carte interactive
+- **Créez différents objectifs** pour tester le système de progression
+- **Testez sur différents appareils** (Android/iOS)
+
+#### **📱 Fonctionnalités à Explorer**
+- **Système d'objectifs** : Créez un objectif de 5 visites/semaine
+- **Lieux existants** : Ajoutez des photos à des lieux déjà visités
+- **Statistiques** : Vérifiez la mise à jour des compteurs
+- **Interface responsive** : Testez en mode portrait/paysage
+
+#### **🔍 Points d'Attention**
+- **Performance** : L'application doit être fluide
+- **Permissions** : Toutes les permissions doivent être gérées
+- **Données** : Les photos et localisations doivent être persistantes
+- **UI/UX** : L'interface doit être intuitive et moderne
+
+### **📸 Workflow de Test Complet**
+
+#### **🔄 Scénario de Test Standard**
+1. **Installation** : Expo Go + Expo Snack
+2. **Authentification** : Création de compte
+3. **Première photo** : Bureau avec objectif 3x/semaine
+4. **Deuxième photo** : Même lieu (test lieu existant)
+5. **Troisième photo** : Nouveau lieu (parc)
+6. **Vérification carte** : 2 marqueurs visibles
+7. **Vérification journal** : 3 photos dans timeline
+8. **Vérification profil** : Statistiques mises à jour
+9. **Test objectifs** : Progression affichée
+10. **Test déconnexion** : Retour à l'écran de connexion
+
+### **🚀 Version React Native CLI (Production)**
 ```bash
 cd CameraLocApp
 npm install
 npx react-native run-android  # ou run-ios
 ```
 
-### Backend
+### **🔧 Backend (Optionnel)**
 ```bash
 cd camera-loc-backend
 npm install
