@@ -1,0 +1,151 @@
+architecture:
+  mobile_app:
+    platform: React Native CLI
+    language: TypeScript
+    navigation:
+      type: tabs
+      component: MainNavigator
+      tabs: [Camera, Map, Calendar, Profile]
+    ui:
+      screens:
+        - name: CameraScreen
+          responsibilities:
+            - take_photo_via_CameraService
+            - get_gps_via_LocationService
+            - preview_and_save
+            - recent_photos_gallery
+        - name: MapScreen
+          responsibilities:
+            - load_photos_and_locations
+            - compute_initial_region
+            - render_markers_and_callouts
+        - name: CalendarScreen
+          responsibilities:
+            - load_all_photos
+            - compute_stats_today_week_month
+            - calendar_days_with_photo_flags
+            - list_photos_for_selected_date
+        - name: ProfileScreen
+          responsibilities:
+            - view_edit_user_profile
+            - logout
+        - name: AuthScreen
+          responsibilities:
+            - login_register_via_AuthService
+    services:
+      CameraService:
+        lib: react-native-image-picker
+        operations: [takePhoto, selectFromGallery, showImageSourceDialog]
+      LocationService:
+        lib: react-native-geolocation-service
+        operations: [getCurrentPosition, watchPosition, stopWatching]
+      PermissionService:
+        purpose: request_all_required_permissions
+      StorageService:
+        purpose: domain_facade_for_persistence
+        depends_on: [DatabaseService, AuthService]
+        operations: [savePhoto, getPhotos, getPhotosByDate, saveLocation, getLocations, updateLocationVisit, deletePhoto, getWeeklyProgress]
+      DatabaseService:
+        lib: react-native-sqlite-storage
+        tables: [users, photos, locations, location_photos]
+      AuthService:
+        session_storage: AsyncStorage(@current_user)
+        operations: [initialize, register, login, logout, getCurrentUser, updateProfile, deleteAccount]
+      ApiService:
+        optional: true
+        purpose: sync_with_backend
+    local_storage:
+      sqlite:
+        tables:
+          users: { id: text, email: text, name: text, password: text, created_at: datetime }
+          photos: { id: text, uri: text, latitude: real, longitude: real, timestamp: datetime, location_name: text?, description: text?, user_id: text }
+          locations: { id: text, name: text, latitude: real, longitude: real, description: text?, visit_goal: int, current_visits: int, week_start_date: date, user_id: text }
+          location_photos: { location_id: text, photo_id: text }
+      asyncstorage:
+        keys: [@current_user]
+    ids:
+      utils: uuid.ts
+      functions: [generateUUID, generateSimpleId]
+  backend_api:
+    runtime: Node.js
+    framework: Express
+    middlewares: [helmet, compression, cors, express.json, express.urlencoded]
+    uploads:
+      lib: multer
+      dir: ./uploads
+      static_route: /uploads
+      file_limit: 10MB
+    database:
+      engine: SQLite
+      file: ./database.sqlite
+      tables:
+        users: { id, email unique, name, password, created_at }
+        photos: { id, filename, original_name, mime_type, size, latitude, longitude, location_name, timestamp, user_id, created_at }
+        locations: { id, name, visit_goal, current_visits, week_start, user_id, created_at }
+        location_photos: { id, location_id, photo_id, created_at }
+    endpoints:
+      - method: POST
+        path: /api/auth/register
+        body: { email, password, name }
+        returns: { user }
+      - method: POST
+        path: /api/auth/login
+        body: { email, password }
+        returns: { user }
+      - method: POST
+        path: /api/photos
+        formdata: { photo:file, latitude, longitude, locationName?, userId, timestamp? }
+        returns: { photo_with_public_url }
+      - method: GET
+        path: /api/photos/:userId
+        returns: { photos_with_public_urls }
+      - method: DELETE
+        path: /api/photos/:photoId
+        returns: { message }
+      - method: POST
+        path: /api/locations
+        body: { name, visitGoal?, userId }
+        returns: { location }
+      - method: GET
+        path: /api/locations/:userId
+        returns: { locations }
+      - method: GET
+        path: /api/health
+        returns: { status, timestamp, version }
+  flows:
+    capture_and_save:
+      steps:
+        - CameraScreen: takePhoto -> CameraService
+        - CameraScreen: getGPS -> LocationService
+        - CameraScreen: preview_and_confirm
+        - StorageService: savePhoto -> DatabaseService(SQLite)
+        - if_new_location: StorageService.saveLocation
+        - if_existing_location: StorageService.updateLocationVisit
+    map_rendering:
+      steps:
+        - MapScreen: load photos/locations via StorageService
+        - compute_initial_region_from_photos
+        - MapView: render markers with photo thumbnails + callouts
+    timeline:
+      steps:
+        - CalendarScreen: load all photos -> compute date flags
+        - on_day_select: getPhotosByDate(date)
+        - render list with time, location, coords
+    auth:
+      steps:
+        - App.tsx: initialize -> AuthService.initialize
+        - getCurrentUser from AsyncStorage
+        - route: auth_or_permissions_or_main
+        - AuthScreen: register/login -> AuthService -> DatabaseService + AsyncStorage
+    sync_optional:
+      steps:
+        - ApiService: upload photo to /api/photos
+        - ApiService: pull photos/locations for user
+  config:
+    env:
+      PORT: 3000
+      CORS_ORIGIN: "*"
+      UPLOAD_PATH: "./uploads"
+      MAX_FILE_SIZE: 10485760
+      DB_PATH: "./database.sqlite"
+
