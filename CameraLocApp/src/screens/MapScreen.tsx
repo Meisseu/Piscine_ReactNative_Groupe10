@@ -211,7 +211,7 @@ const MapScreen: React.FC = () => {
                     <Text style={styles.cardDate}>{formatDate(photo.timestamp)}</Text>
                     <Text style={styles.cardCoords}>
                       {photo.latitude.toFixed(4)}, {photo.longitude.toFixed(4)}
-                    </Text>
+        </Text>
                   </View>
                 </Callout>
               </Marker>
