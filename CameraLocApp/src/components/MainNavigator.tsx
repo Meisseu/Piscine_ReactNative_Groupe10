@@ -4,6 +4,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import CameraScreen from '../screens/CameraScreen';
 import MapScreen from '../screens/MapScreen';
 import CalendarScreen from '../screens/CalendarScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import { BottomTabParamList } from '../types';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -58,6 +59,15 @@ const MainNavigator: React.FC = () => {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon icon="📅" focused={focused} label="Calendrier" />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="👤" focused={focused} label="Profil" />
           ),
         }}
       />

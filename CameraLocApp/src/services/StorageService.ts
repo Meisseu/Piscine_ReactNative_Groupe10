@@ -43,9 +43,8 @@ export class StorageService {
         throw new Error('Utilisateur non connecté');
       }
 
-      // Note: Il faudrait ajouter une méthode deletePhoto dans DatabaseService
-      // Pour l'instant, on peut laisser cette fonctionnalité pour plus tard
-      console.log('⚠️ Suppression de photo pas encore implémentée dans SQLite');
+      await DatabaseService.deletePhoto(photoId, currentUser.id);
+      console.log('🗑️ Photo supprimée:', photoId);
     } catch (error) {
       console.error('❌ Erreur lors de la suppression de la photo:', error);
       throw error;

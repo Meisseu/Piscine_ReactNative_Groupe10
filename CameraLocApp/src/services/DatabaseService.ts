@@ -146,6 +146,68 @@ export class DatabaseService {
     };
   }
 
+  static async getUserByEmailExcludingId(email: string, excludeUserId: string): Promise<User | null> {
+    if (!this.db) throw new Error('Base de données non initialisée');
+
+    const [results] = await this.db.executeSql(
+      'SELECT id, email, name, created_at FROM users WHERE email = ? AND id != ?',
+      [email, excludeUserId]
+    );
+
+    if (results.rows.length === 0) {
+      return null;
+    }
+
+    const row = results.rows.item(0);
+    return {
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      createdAt: new Date(row.created_at),
+    };
+  }
+
+  static async updateUser(
+    userId: string,
+    updates: { email?: string; name?: string; password?: string }
+  ): Promise<User> {
+    if (!this.db) throw new Error('Base de données non initialisée');
+
+    // Récupérer l'utilisateur actuel
+    const [currentResults] = await this.db.executeSql(
+      'SELECT id, email, name, password, created_at FROM users WHERE id = ?',
+      [userId]
+    );
+    if (currentResults.rows.length === 0) {
+      throw new Error('Utilisateur non trouvé');
+    }
+    const current = currentResults.rows.item(0);
+
+    // Vérifier l'unicité de l'email si mis à jour
+    if (updates.email && updates.email !== current.email) {
+      const existing = await this.getUserByEmailExcludingId(updates.email, userId);
+      if (existing) {
+        throw new Error('Cet email est déjà utilisé par un autre compte');
+      }
+    }
+
+    const nextEmail = updates.email ?? current.email;
+    const nextName = updates.name ?? current.name;
+    const nextPassword = updates.password ?? current.password;
+
+    await this.db.executeSql(
+      'UPDATE users SET email = ?, name = ?, password = ? WHERE id = ?',
+      [nextEmail, nextName, nextPassword, userId]
+    );
+
+    return {
+      id: userId,
+      email: nextEmail,
+      name: nextName,
+      createdAt: new Date(current.created_at),
+    };
+  }
+
   // ==================== PHOTOS ====================
   static async savePhoto(photo: Photo, userId: string): Promise<void> {
     if (!this.db) throw new Error('Base de données non initialisée');
@@ -217,6 +279,16 @@ export class DatabaseService {
     }
 
     return photos;
+  }
+
+  static async deletePhoto(photoId: string, userId: string): Promise<void> {
+    if (!this.db) throw new Error('Base de données non initialisée');
+
+    // Supprimer les liaisons et la photo pour cet utilisateur
+    await this.db.transaction(async (tx) => {
+      await tx.executeSql('DELETE FROM location_photos WHERE photo_id = ?', [photoId]);
+      await tx.executeSql('DELETE FROM photos WHERE id = ? AND user_id = ?', [photoId, userId]);
+    });
   }
 
   // ==================== LIEUX ====================

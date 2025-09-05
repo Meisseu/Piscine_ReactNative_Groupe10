@@ -109,4 +109,20 @@ export class AuthService {
       throw error;
     }
   }
+
+  static async updateProfile(updates: { name?: string; email?: string; password?: string }): Promise<User> {
+    try {
+      const currentUser = await this.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('Aucun utilisateur connecté');
+      }
+
+      const updated = await DatabaseService.updateUser(currentUser.id, updates);
+      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updated));
+      return updated;
+    } catch (error) {
+      console.error('❌ Erreur lors de la mise à jour du profil:', error);
+      throw error;
+    }
+  }
 }

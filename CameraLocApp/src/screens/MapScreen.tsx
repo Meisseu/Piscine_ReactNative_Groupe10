@@ -10,6 +10,7 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
+import MapView, { Marker, Callout } from 'react-native-maps';
 import { Photo, Location, WeeklyProgress } from '../types';
 import { StorageService } from '../services/StorageService';
 
@@ -41,6 +42,46 @@ const MapScreen: React.FC = () => {
       console.error('Erreur lors du chargement des données:', error);
       Alert.alert('Erreur', 'Impossible de charger les données de la carte');
     }
+  };
+
+  const getMapRegion = () => {
+    if (photos.length === 0) {
+      return {
+        latitude: 48.8566,
+        longitude: 2.3522,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      };
+    }
+
+    const validPhotos = photos.filter(p => p.latitude !== 0 && p.longitude !== 0);
+    if (validPhotos.length === 0) {
+      return {
+        latitude: 48.8566,
+        longitude: 2.3522,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      };
+    }
+
+    const latitudes = validPhotos.map(p => p.latitude);
+    const longitudes = validPhotos.map(p => p.longitude);
+    const minLat = Math.min(...latitudes);
+    const maxLat = Math.max(...latitudes);
+    const minLng = Math.min(...longitudes);
+    const maxLng = Math.max(...longitudes);
+
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLng = (minLng + maxLng) / 2;
+    const deltaLat = Math.max(maxLat - minLat, 0.01) * 1.2;
+    const deltaLng = Math.max(maxLng - minLng, 0.01) * 1.2;
+
+    return {
+      latitude: centerLat,
+      longitude: centerLng,
+      latitudeDelta: deltaLat,
+      longitudeDelta: deltaLng,
+    };
   };
 
   const onPhotoPress = (photo: Photo) => {
@@ -140,11 +181,43 @@ const MapScreen: React.FC = () => {
     <View style={styles.container}>
       <Text style={styles.title}>🗺️ Carte</Text>
       
-      <View style={styles.mapPlaceholder}>
-        <Text style={styles.mapText}>📍 Vue Carte</Text>
-        <Text style={styles.mapSubtext}>
-          Version démo - Les photos et lieux seraient affichés sur une vraie carte
-        </Text>
+      <View style={styles.mapContainer}>
+        <MapView
+          style={styles.map}
+          initialRegion={getMapRegion()}
+          showsUserLocation={true}
+          showsCompass={true}
+          showsScale={true}
+        >
+          {photos.map((photo) => {
+            if (photo.latitude === 0 || photo.longitude === 0) return null;
+            return (
+              <Marker
+                key={photo.id}
+                coordinate={{ latitude: photo.latitude, longitude: photo.longitude }}
+                title={photo.locationName || 'Lieu inconnu'}
+                description={formatDate(photo.timestamp)}
+                onPress={() => onPhotoPress(photo)}
+              >
+                <View style={styles.customMarker}>
+                  <Image source={{ uri: photo.uri }} style={styles.markerImage} />
+                </View>
+                <Callout>
+                  <View style={styles.calloutContent}>
+                    <Image source={{ uri: photo.uri }} style={styles.calloutImage} />
+                    {photo.locationName ? (
+                      <Text style={styles.cardLocation}>📍 {photo.locationName}</Text>
+                    ) : null}
+                    <Text style={styles.cardDate}>{formatDate(photo.timestamp)}</Text>
+                    <Text style={styles.cardCoords}>
+                      {photo.latitude.toFixed(4)}, {photo.longitude.toFixed(4)}
+                    </Text>
+                  </View>
+                </Callout>
+              </Marker>
+            );
+          })}
+        </MapView>
       </View>
 
       <View style={styles.dataContainer}>
@@ -306,28 +379,35 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
   },
-  mapPlaceholder: {
-    height: 200,
-    backgroundColor: '#e8f4fd',
+  mapContainer: {
+    height: 300,
     margin: 20,
     borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  map: {
+    flex: 1,
+  },
+  customMarker: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#3498db',
-    borderStyle: 'dashed',
+    borderColor: '#FFFFFF',
   },
-  mapText: {
-    fontSize: 24,
-    color: '#3498db',
-    fontWeight: 'bold',
+  markerImage: {
+    width: '100%',
+    height: '100%',
   },
-  mapSubtext: {
-    fontSize: 12,
-    color: '#7f8c8d',
-    textAlign: 'center',
-    marginTop: 10,
-    paddingHorizontal: 20,
+  calloutContent: {
+    width: 200,
+  },
+  calloutImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   dataContainer: {
     flex: 1,
